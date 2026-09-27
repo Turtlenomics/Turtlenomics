@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turtlenomics Portfolio Risk Score</title>
+  <style>
+    :root {
+      --navy: #102a43;
+      --orange: #f28c28;
+      --cream: #f7f4ee;
+      --white: #ffffff;
+      --gray: #627d98;
+      --light: #e9eef3;
+      --green: #2f855a;
+      --yellow: #b7791f;
+      --red: #c53030;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--cream);
+      color: var(--navy);
+    }
+
+    .container {
+      width: min(1050px, 92%);
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--navy);
+      color: white;
+      padding: 32px 0;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+
+    header p {
+      margin: 0;
+      color: #d9e2ec;
+    }
+
+    .card {
+      background: var(--white);
+      margin: 28px 0;
+      padding: 26px;
+      border-radius: 14px;
+      box-shadow: 0 5px 20px rgba(16, 42, 67, 0.08);
+    }
+
+    h2 { margin-top: 0; }
+
+    .notice {
+      background: #fff8e8;
+      border-left: 4px solid var(--orange);
+      padding: 14px;
+      border-radius: 6px;
+      color: #5f451b;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .holding {
+      border: 1px solid var(--light);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 12px 0;
+      background: #fbfcfd;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #bcccdc;
+      border-radius: 7px;
+      font-size: 15px;
+      background: white;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 17px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .primary {
+      background: var(--orange);
+      color: white;
+    }
+
+    .secondary {
+      background: var(--navy);
+      color: white;
+    }
+
+    .danger {
+      background: #fce8e6;
+      color: var(--red);
+      margin-top: 10px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .result {
+      text-align: center;
+      display: none;
+    }
+
+    .score {
+      font-size: 68px;
+      font-weight: 800;
+      margin: 5px 0;
+    }
+
+    .risk-label {
+      display: inline-block;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-weight: bold;
+      margin-bottom: 18px;
+    }
+
+    .bar {
+      width: 100%;
+      height: 18px;
+      background: var(--light);
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 15px 0 25px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+      background: var(--orange);
+    }
+
+    .breakdown {
+      text-align: left;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .metric {
+      border: 1px solid var(--light);
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      margin-top: 4px;
+    }
+
+    .explanation {
+      text-align: left;
+      line-height: 1.6;
+      margin-top: 22px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: var(--gray);
+      font-size: 13px;
+    }
+
+    @media (max-width: 800px) {
+      .grid, .breakdown {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .grid, .breakdown {
+        grid-template-columns: 1fr;
+      }
+      header h1 { font-size: 25px; }
+      .score { font-size: 54px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="container">
+    <h1>🐢 Turtlenomics Portfolio Risk Score</h1>
+    <p>A simple educational tool for understanding portfolio risk.</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="card">
+    <div class="notice">
+      <strong>Educational tool:</strong> This calculator provides an educational risk score based
+      on the information entered by the user. It is not investment advice, a recommendation to
+      buy or sell securities, or a prediction of future performance.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Build Your Portfolio</h2>
+    <p>Enter each holding, its portfolio weight, and your assessment of its individual risk.</p>
+
+    <div id="holdings"></div>
+
+    <div class="actions">
+      <button class="secondary" onclick="addHolding()">+ Add Holding</button>
+      <button class="primary" onclick="calculateRisk()">Calculate Risk Score</button>
+    </div>
+  </section>
+
+  <section class="card result" id="result">
+    <h2>Your Portfolio Risk Score</h2>
+
+    <div class="score" id="score">0</div>
+    <div class="risk-label" id="riskLabel">—</div>
+
+    <div class="bar">
+      <div class="bar-fill" id="barFill"></div>
+    </div>
+
+    <div class="breakdown">
+      <div class="metric">
+        Weighted Risk
+        <strong id="weightedRisk">—</strong>
+      </div>
+
+      <div class="metric">
+        Concentration
+        <strong id="concentration">—</strong>
+      </div>
+
+      <div class="metric">
+        Holdings
+        <strong id="holdingCount">—</strong>
+      </div>
+    </div>
+
+    <div class="explanation" id="explanation"></div>
+  </section>
+
+</main>
+
+<footer>
+  © 2026 Turtlenomics · Building Wealth Slowly, Steadily, & Securely.
+</footer>
+
+<script>
+  let holdingId = 0;
+
+  function addHolding() {
+    holdingId++;
+
+    const div = document.createElement("div");
+    div.className = "holding";
+    div.id = "holding-" + holdingId;
+
+    div.innerHTML = `
+      <div class="grid">
+        <div>
+          <label>Ticker / Name</label>
+          <input type="text" class="ticker" placeholder="e.g. AAPL">
+        </div>
+
+        <div>
+          <label>Portfolio Weight (%)</label>
+          <input type="number" class="weight" min="0" max="100" step="0.1" placeholder="e.g. 15">
+        </div>
+
+        <div>
+          <label>Individual Risk</label>
+          <select class="risk">
+            <option value="1">1 — Very Low</option>
+            <option value="2">2 — Low</option>
+            <option value="3" selected>3 — Moderate</option>
+            <option value="4">4 — High</option>
+            <option value="5">5 — Very High</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Asset Type</label>
+          <select class="asset">
+            <option>Stock</option>
+            <option>ETF</option>
+            <option>Bond</option>
+            <option>REIT</option>
+            <option>Crypto</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="danger" onclick="removeHolding(${holdingId})">Remove</button>
+    `;
+
+    document.getElementById("holdings").appendChild(div);
+  }
+
+  function removeHolding(id) {
+    const element = document.getElementById("holding-" + id);
+    if (element) element.remove();
+  }
+
+  function calculateRisk() {
+    const holdings = [...document.querySelectorAll(".holding")];
+
+    if (holdings.length === 0) {
+      alert("Add at least one holding first.");
+      return;
+    }
+
+    let totalWeight = 0;
+    let weightedRisk = 0;
+    let largestWeight = 0;
+
+    holdings.forEach(h => {
+      const weight = parseFloat(h.querySelector(".weight").value) || 0;
+      const risk = parseFloat(h.querySelector(".risk").value) || 3;
+
+      totalWeight += weight;
+      weightedRisk += weight * risk;
+
+      if (weight > largestWeight) {
+        largestWeight = weight;
+      }
+    });
+
+    if (totalWeight <= 0) {
+      alert("Enter portfolio weights before calculating.");
+      return;
+    }
+
+    // Normalize weights if they do not add up to exactly 100%.
+    const normalizedRisk = weightedRisk / totalWeight;
+
+    // Concentration adjustment:
+    // A portfolio with one very large position receives additional risk points.
+    let concentrationPenalty = 0;
+
+    if (largestWeight >= 50) concentrationPenalty = 20;
+    else if (largestWeight >= 40) concentrationPenalty = 15;
+    else if (largestWeight >= 30) concentrationPenalty = 10;
+    else if (largestWeight >= 20) concentrationPenalty = 5;
+
+    // Diversification adjustment based on number of holdings.
+    let diversificationAdjustment = 0;
+
+    if (holdings.length >= 15) diversificationAdjustment = -5;
+    else if (holdings.length >= 10) diversificationAdjustment = -3;
+    else if (holdings.length <= 2) diversificationAdjustment = 5;
+
+    // Convert 1–5 weighted risk into approximately a 0–100 score.
+    let score = ((normalizedRisk - 1) / 4) * 80 + 10;
+
+    score += concentrationPenalty;
+    score += diversificationAdjustment;
+
+    score = Math.max(0, Math.min(100, Math.round(score)));
+
+    let label;
+    let explanation;
+
+    if (score <= 25) {
+      label = "Lower Risk";
+      explanation =
+        "The portfolio's entered characteristics produce a relatively lower risk score. " +
+        "This does not mean the portfolio cannot lose value.";
+    } else if (score <= 50) {
+      label = "Moderate Risk";
+      explanation =
+        "The portfolio's entered characteristics produce a moderate risk score. " +
+        "Individual holdings, concentration, and market conditions can still create meaningful losses.";
+    } else if (score <= 75) {
+      label = "Higher Risk";
+      explanation =
+        "The portfolio's entered characteristics produce a higher risk score. " +
+        "The score is influenced by the risk levels entered and by concentration in large positions.";
+    } else {
+      label = "Very High Risk";
+      explanation =
+        "The portfolio's entered characteristics produce a very high risk score. " +
+        "Large concentrations and higher-risk holdings can increase the potential for significant volatility and loss.";
+    }
+
+    document.getElementById("result").style.display = "block";
+    document.getElementById("score").textContent = score;
+    document.getElementById("riskLabel").textContent = label;
+    document.getElementById("weightedRisk").textContent = normalizedRisk.toFixed(2) + " / 5";
+    document.getElementById("concentration").textContent = largestWeight.toFixed(1) + "%";
+    document.getElementById("holdingCount").textContent = holdings.length;
+
+    document.getElementById("barFill").style.width = score + "%";
+    document.getElementById("explanation").innerHTML =
+      `<strong>What this means:</strong><br>${explanation}<br><br>` +
+      `<strong>Important:</strong> This score is a simplified educational model. ` +
+      `It does not account for every factor that can affect investment risk, including ` +
+      `valuation, liquidity, financial statements, interest rates, economic conditions, ` +
+      `correlations between holdings, or changes in market conditions.`;
+
+    document.getElementById("result").scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+
+  // Start with three example holdings.
+  addHolding();
+  addHolding();
+  addHolding();
+</script>
+
+</body>
+</html>
